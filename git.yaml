@@ -1,0 +1,23 @@
+id: git-exposed-head
+
+info:
+  name: Exposed Git HEAD File
+  author: chatgpt
+  severity: high
+  description: Detects exposed .git/HEAD file.
+  tags: git,exposure,misconfig
+
+requests:
+  - method: GET
+    path:
+      - "{{BaseURL}}/.git/HEAD"
+
+    matchers:
+      - type: status
+        status:
+          - 200
+
+      - type: regex
+        part: body
+        regex:
+          - "^ref: refs/heads/"
