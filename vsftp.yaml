@@ -1,0 +1,27 @@
+id: vscode-sftp-single-output
+
+info:
+  name: VSCode SFTP Config Leak (Single Output)
+  author: chatgpt
+  severity: critical
+  tags: vscode,sftp,credentials,exposure
+
+requests:
+  - method: GET
+    path:
+      - "{{BaseURL}}/.vscode/sftp.json"
+
+    matchers:
+      - type: word
+        part: body
+        words:
+          - "\"host\""
+          - "\"username\""
+        condition: and
+
+    extractors:
+      - type: regex
+        name: sftp_config
+        part: body
+        regex:
+          - "\"host\"\\s*:\\s*\"([^\"]+)\".*\"username\"\\s*:\\s*\"([^\"]+)\".*\"remotePath\"\\s*:\\s*\"([^\"]+)\""
