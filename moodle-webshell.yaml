@@ -1,0 +1,67 @@
+id: moodle-webshell-rce
+
+info:
+  name: Moodle Webshell RCE
+  author: 0xWhoami35
+  severity: critical
+  description: Detects Moodle webshells - webshell0.php (GET) and webshell.php (POST)
+  tags: moodle,webshell,rce
+
+requests:
+  # webshell0.php - GET method
+  - method: GET
+    path:
+      - "{{BaseURL}}/local/moodle_webshell/webshell0.php?action=exec&cmd=id"
+    
+    stop-at-first-match: true
+    matchers-condition: and
+    matchers:
+      - type: word
+        part: body
+        words:
+          - "stdout"
+          - "uid="
+        condition: and
+        
+      - type: status
+        status:
+          - 200
+    
+    extractors:
+      - type: regex
+        name: uid_info
+        part: body
+        regex:
+          - '"stdout":"uid=\d+\([^)]+\)[^"]*"'
+        internal: true  # This makes it internal only, not displayed separately
+
+  # webshell.php - POST method
+  - method: POST
+    path:
+      - "{{BaseURL}}/local/moodle_webshell/webshell.php"
+    
+    body: "action=exec&cmd=id"
+    headers:
+      Content-Type: "application/x-www-form-urlencoded"
+    
+    stop-at-first-match: true
+    matchers-condition: and
+    matchers:
+      - type: word
+        part: body
+        words:
+          - "stdout"
+          - "uid="
+        condition: and
+        
+      - type: status
+        status:
+          - 200
+    
+    extractors:
+      - type: regex
+        name: uid_info
+        part: body
+        regex:
+          - '"stdout":"uid=\d+\([^)]+\)[^"]*"'
+        internal: true  # Make it internal
